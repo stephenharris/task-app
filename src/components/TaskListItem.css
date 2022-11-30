@@ -13,6 +13,10 @@ ion-item h2 {
   margin: 0;
 }
 
+ion-item.status-complete h2 {
+  text-decoration: line-through;
+}
+
 ion-item p {
   text-overflow: ellipsis;
   overflow: hidden;
@@ -42,18 +46,29 @@ ion-item ion-note.md {
 
 .dot {
   display: block;
-  height: 12px;
-  width: 12px;
-  border-radius: 50%;
+  height: 60px;
+  width: 5px;
+  border-radius: 15%;
   align-self: start;
   margin: 16px 10px 16px 16px;
 }
 
-.dot-unread {
+.dot-todo {
   background: var(--ion-color-primary);
+}
+.dot-in-progress {
+  background: var(--ion-color-warning);
+}
+.dot-complete {
+  background: var(--ion-color-medium);
 }
 
 ion-footer ion-title {
   font-size: 11px;
   font-weight: normal;
+}
+
+.action-sheet-destructive,
+.action-sheet-destructive ion-icon{
+  color: var(--ion-color-danger)!important;
 }

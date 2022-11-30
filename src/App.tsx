@@ -2,7 +2,7 @@ import { Redirect, Route } from 'react-router-dom';
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import Home from './pages/Home';
-import ViewMessage from './pages/ViewMessage';
+import AddItem from './pages/AddItem'
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -22,8 +22,13 @@ import '@ionic/react/css/display.css';
 
 /* Theme variables */
 import './theme/variables.css';
+import { createStore, set } from './data/storage';
+import EditItem from './pages/EditItem';
 
 setupIonicReact();
+
+createStore("TodoDB");
+//set("todo", []);
 
 const App: React.FC = () => (
   <IonApp>
@@ -35,8 +40,11 @@ const App: React.FC = () => (
         <Route path="/home" exact={true}>
           <Home />
         </Route>
-        <Route path="/message/:id">
-           <ViewMessage />
+        <Route path="/edit/:id">
+           <EditItem />
+        </Route>
+        <Route path="/new">
+           <AddItem />
         </Route>
       </IonRouterOutlet>
     </IonReactRouter>
