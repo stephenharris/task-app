@@ -18,6 +18,13 @@ jobs:
       with:
         node-version: '16'  # Set the Node.js version you need for your Ionic project
 
+    - name: Authenticate with GitHub (Private npm dependencies)
+      run: |
+        echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
+        # Authenticate to GitHub's package registry
+        # You can also specify the registry if needed:
+        # echo "@stephenharris:registry=https://npm.pkg.github.com" >> ~/.npmrc
+
     - name: Install dependencies
       run: npm install
 
