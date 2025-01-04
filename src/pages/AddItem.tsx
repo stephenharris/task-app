@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-import { Task, getTask } from '../data/tasks';
 import {
   IonBackButton,
   IonButton,
@@ -13,26 +12,27 @@ import {
   IonLabel,
   IonModal,
   IonPage,
-  IonSelect,
-  IonSelectOption,
   IonToolbar,
   InputCustomEvent,
-  SelectCustomEvent,
   DatetimeCustomEvent
 } from '@ionic/react';
 import './ViewTask.css';
 import { v4 as uuid } from 'uuid';
 import {useHistory} from 'react-router';
-import { setObject } from '../data/storage';
+import { IonicStore } from '../data/appstorage';
+import ChipInput from '../components/ChipInput';
+import { TaskService } from '@stephenharris/task-cli/lib/tasks';
 
 function AddItem() {
   const [description, setDescription] = useState<string>("");
   const [date, setDate] = useState<string>("");
-  const [category, setCategory] = useState<string>("");
+  const [tags, setTags] = useState<string[]>([]);
 
   const datetime = useRef<HTMLIonDatetimeElement>(null);
   const history = useHistory();
-  
+
+  const taskService = new TaskService(IonicStore.getStore("TodoDB"))
+
   return (
     <IonPage id="view-task-page">
       <IonHeader translucent>
@@ -50,22 +50,17 @@ function AddItem() {
         <IonInput onIonChange={(evt: InputCustomEvent) => setDescription(evt.detail.value || "")} placeholder='...'></IonInput>
       </IonItem>
 
-      <IonItem>
-        <IonSelect  onIonChange={(evt: SelectCustomEvent) => setCategory(evt.detail.value || "")} placeholder='Category'>
-          <IonSelectOption value="none">None</IonSelectOption>
-          <IonSelectOption value="work">Work</IonSelectOption>
-          <IonSelectOption value="home">Home</IonSelectOption>
-          <IonSelectOption value="garden">Garden</IonSelectOption>
-        </IonSelect>          
+      <IonItem className="item-label-stacked">
+        <IonLabel position="floating">Tags</IonLabel>
+        <ChipInput value={tags} onChange={(value) => setTags(value)}></ChipInput>      
       </IonItem>
-
 
       <IonItem>
         <IonLabel>Date</IonLabel>
-        <IonDatetimeButton datetime='datetime'></IonDatetimeButton>  
+        <IonDatetimeButton datetime='datetime-new'></IonDatetimeButton>  
         <IonModal keepContentsMounted={true}>
-          <IonDatetime ref={datetime} presentation="date" id="datetime" onIonChange={(evt: DatetimeCustomEvent) => {
-            console.log("arg");
+          <IonDatetime ref={datetime} presentation="date" id="datetime-new" onIonChange={(evt: DatetimeCustomEvent) => {
+            console.log("arg!");
             console.log(datetime.current);
             console.log(evt.detail.value)
             setDate(evt.detail.value as string || "")
@@ -82,11 +77,11 @@ function AddItem() {
 
       <IonButton onClick={async () => {
           const id = uuid();
-          await setObject("todo", id, {
+          taskService.updateTask({
             id: id,
             description: description,
             date: date,
-            category: category,
+            tags: tags,
             status: "todo"
           })
           history.push('/home');

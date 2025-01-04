@@ -1,7 +1,10 @@
 import { useState } from 'react';
-import { Task, getTasks } from '../data/tasks';
-import { categories } from '../data/categories';
+import { Task, sortTasks, TaskService } from '@stephenharris/task-cli/lib/tasks';
+import { sync } from '@stephenharris/task-cli/lib/sync';
+import { Gist } from '@stephenharris/task-cli/lib/gist';
+import { RemoteStore } from '@stephenharris/task-cli/lib/remote';
 import {
+  IonAlert,
   IonButton,
   IonButtons,
   IonCheckbox,
@@ -26,26 +29,28 @@ import {
 import './Home.css';
 
 import { IonFab, IonFabButton, IonIcon } from '@ionic/react';
-import { add } from 'ionicons/icons';
-import { removeObject, setObject } from '../data/storage';
+import { add, settingsOutline } from 'ionicons/icons';
+import { IonicStore, removeObject } from '../data/appstorage';
 import moment from 'moment';
 import TaskListItem from '../components/TaskListItem';
-
+import ChipInput from '../components/ChipInput';
 
 const Home: React.FC = () => {
-
-  const [tasks, settasks] = useState<Task[]>([]);
   
+  const [tasks, settasks] = useState<Task[]>([]);
   const [showComplete, setShowComplete]= useState<boolean>(false);
   const [filter, setFilter]= useState<string>("all");
-  const [categoryFilter, setCategoryFilter]= useState<string[]>(categories.map(cat => cat.id));
-  
-  
+  const [categoryFilter, setCategoryFilter]= useState<string[]>([]);
+  const [error, setError] = useState("");
+
+  const store = IonicStore.getStore("TodoDB");
+  const taskService = new TaskService(store);
+
   const fetchItems = () => {
-    return getTasks()
+    
+    return taskService.getTasks()
       .then((msgs) => {
-        console.log(msgs);
-        settasks(msgs.sort((a: Task, b: Task) => a.date > b.date ? 1 : -1));
+        settasks(msgs.sort(sortTasks));
       })
 
   }
@@ -54,28 +59,72 @@ const Home: React.FC = () => {
     return fetchItems();
   });
 
-  const refresh = (e: CustomEvent) => {
-    fetchItems().then(e.detail.complete());
+  const refresh = async (e: CustomEvent) => {
+    console.log('refresh');
+    const remote: RemoteStore = await store.get("gist").then((gist) => new Gist(gist.id, gist.token))
+    return Promise.allSettled([
+      taskService.getTasks(),
+      store.getCachedState(),
+      remote.getRemoteState()
+    ])
+      .then(async (result) => {
+
+        if (result[0].status !== "fulfilled") {
+          throw Error("Failed to fetch tasks")
+        }
+
+        if (result[2].status !== "fulfilled") {
+          console.log(result[2].reason)
+          throw Error(`Failed to fetch remote state: ${result[2].reason}`);
+        }
+
+        let tasks = result[0].value;
+        let cachedState = result[1].status === "fulfilled" ? result[1].value : null
+        let remoteState = result[2].value;
+
+        let newState = await sync(remoteState, cachedState, tasks);
+        console.log(remoteState);
+        console.log(newState);
+        console.log(remoteState.serial);
+        console.log(newState.serial);
+        if (newState.serial === remoteState.serial + 1) {
+          await remote.setRemoteState(newState)
+        }
+
+        return store.setCachedState(newState)
+          .then(() => store.set('todo', newState.tasks))
+          .then(fetchItems);      
+      })
+      .then(() => {
+        e.detail.complete()
+        console.log("complete");
+      })
+      .catch((error) => {
+        setError(error.message);
+        e.detail.complete();
+        
+      });
+
   };
 
   const startTask = async (task: Task) => {
     task.status = "in-progress"
-    setObject("todo", task.id, task)
+    taskService.updateTask(task)
       .then(fetchItems)
   }
   const pauseTask = async (task: Task) => {
     task.status = "todo"
-    setObject("todo", task.id, task)
+    taskService.updateTask(task)
       .then(fetchItems)
   }
   const completeTask = async (task: Task) => {
     task.status = "complete"
-    setObject("todo", task.id, task)
+    taskService.updateTask(task)
       .then(fetchItems)
   }
 
   const deleteTask = async (task: Task) => {
-    removeObject("todo", task.id)
+    taskService.deleteTask(task.id)
       .then(fetchItems)
   }
 
@@ -85,9 +134,9 @@ const Home: React.FC = () => {
       return false;
     }
 
-    if( !categoryFilter.includes(task.category)) {
+    if( categoryFilter && categoryFilter.length > 0 && !categoryFilter.every(search => task.tags.includes(search))) {
       return false;
-    }
+    } 
 
     switch (filter) {
       case "today":
@@ -104,20 +153,6 @@ const Home: React.FC = () => {
 
   }
 
-  const sortTasks = (a: Task, b: Task) : number => {
-    const statuses = ["complete", "todo", "in-progress" ];
-    const aStatus = statuses.indexOf(a.status);
-    const bStatus = statuses.indexOf(b.status);
-
-    // If status is the same, sort by date due, earliest first.
-    if (aStatus === bStatus) {
-      return moment(a.date).isBefore(moment(b.date)) ? -1 : 1;
-    }
-
-    // A higher status index should be shown first
-    return aStatus > bStatus ? -1 : 1;
-  }
-
   let visibleTasks = tasks && tasks.filter(showTask).sort(sortTasks);
 
   return (
@@ -125,10 +160,19 @@ const Home: React.FC = () => {
       <IonMenu contentId="home-page">
         <IonHeader>
           <IonToolbar>
-            <IonTitle>Menu Content</IonTitle>
+            <IonTitle>Filters</IonTitle>
           </IonToolbar>
         </IonHeader>
         <IonContent className="ion-padding">
+
+        <IonAlert
+          isOpen={error !== ""}
+          onDidDismiss={() => setError("")}
+          header="Alert"
+          subHeader="Error"
+          message={error}
+          buttons={['OK']}
+        />
 
         <IonList>
           <IonListHeader>
@@ -161,36 +205,12 @@ const Home: React.FC = () => {
             </IonItem>
           </IonRadioGroup>
         </IonList>
-        <IonList>
-          <IonListHeader>
-            <IonLabel>Categories</IonLabel>
-            <IonButton onClick={() => setCategoryFilter(categories.map(cat => cat.id))}>Show All</IonButton>
-          </IonListHeader>
 
-          {categories.map((category) => {
-            return (
-              <IonItem key={category.id}>
-                <IonLabel>{category.label}</IonLabel>
-                <IonCheckbox
-                  slot="end" 
-                  value={category.id} 
-                  checked={categoryFilter.includes(category.id)}
-                  onIonChange={(event) => {
-                    let newCategoryFilter = Array.from(categoryFilter);
-                    if (event.detail.checked) {
-                      newCategoryFilter.push(category.id);
-                    } else {
-                      newCategoryFilter = categoryFilter.filter(item => item !== category.id)
-                    }
-                    console.log(newCategoryFilter);
-                    setCategoryFilter(newCategoryFilter);
-                  }}
-                  >  
-                </IonCheckbox>
-              </IonItem>
-            )
-          })}
-          
+        <IonList>
+          <IonItem className="item-label-stacked">
+            <IonLabel position="floating">Tags</IonLabel>
+            <ChipInput value={categoryFilter} onChange={setCategoryFilter}></ChipInput>
+          </IonItem>
         </IonList>
 
         <IonList>
@@ -214,6 +234,13 @@ const Home: React.FC = () => {
           </IonButtons>
 
           <IonTitle>Todo</IonTitle>
+
+          <IonButtons  slot="end">
+            <IonButton routerLink={`/settings`}>
+              <IonIcon  slot="icon-only" icon={settingsOutline}></IonIcon>
+            </IonButton>
+          </IonButtons>
+
         </IonToolbar>
       </IonHeader>
 

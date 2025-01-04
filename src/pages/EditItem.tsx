@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-import { Task, getTask } from '../data/tasks';
 import {
   IonBackButton,
   IonButton,
@@ -13,37 +12,41 @@ import {
   IonLabel,
   IonModal,
   IonPage,
-  IonSelect,
-  IonSelectOption,
   IonToolbar,
   useIonViewWillEnter,
   InputCustomEvent,
-  SelectCustomEvent,
   DatetimeCustomEvent
 } from '@ionic/react';
 import { useParams } from 'react-router';
 import './ViewTask.css';
 import {useHistory} from 'react-router';
-import { get, setObject, removeObject } from '../data/storage';
+import { IonicStore } from '../data/appstorage';
+import ChipInput from '../components/ChipInput';
+import { Task, TaskService } from '@stephenharris/task-cli/lib/tasks';
+
 
 function EditItem() {
   
-  const [id, setTaskId] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
-  const [date, setDate] = useState<string>("");
-  const [category, setCategory] = useState<string>("");
-
+  const [task, setTask] = useState<Task>();
+  const [dueDate, setDueDate] = useState<string>();
   const params = useParams<{ id: string }>();
   const datetime = useRef<HTMLIonDatetimeElement>(null);
   const history = useHistory();
-  
+  const store = IonicStore.getStore("TodoDB");
+  const taskService = new TaskService(store)
+
+  const setProperty = (key: keyof Task, value: any) => {
+    if(task){
+      task[key] = value;
+    }
+    return setTask(task);
+  }
+
   useIonViewWillEnter(() => {
-    getTask(params.id).then((msg) => {
-      setTaskId(msg.id)
-      setDescription(msg.description);
-      setDate(msg.date);
-      setCategory(msg.category);
-    })
+    taskService.getTask(params.id).then((t) => {
+      setTask(t)
+      setDueDate(t.date || "")
+    });
   });
 
   return (
@@ -60,25 +63,20 @@ function EditItem() {
       
       <IonItem>
         <IonLabel position="floating">Description</IonLabel>
-        <IonInput onIonChange={(evt: InputCustomEvent) => setDescription(evt.detail.value || "")} placeholder='...' value={description}></IonInput>
+        <IonInput onIonChange={(evt: InputCustomEvent) => setProperty(task, "description", evt.detail.value || "" )} placeholder='...' value={task?.description}></IonInput>
       </IonItem>
 
-      <IonItem>
-        <IonSelect  onIonChange={(evt: SelectCustomEvent) => setCategory(evt.detail.value || "")} placeholder='Category' value={category}>
-          <IonSelectOption value="none">None</IonSelectOption>
-          <IonSelectOption value="work">Work</IonSelectOption>
-          <IonSelectOption value="home">Home</IonSelectOption>
-          <IonSelectOption value="garden">Garden</IonSelectOption>
-        </IonSelect>          
+      <IonItem className="item-label-stacked">
+        <IonLabel position="floating">Tags</IonLabel>
+        <ChipInput value={task?.tags || []} onChange={(value) => setProperty("tags", value)}></ChipInput>      
       </IonItem>
-
 
       <IonItem>
         <IonLabel>Date</IonLabel>
         <IonDatetimeButton datetime='datetime'></IonDatetimeButton>  
         <IonModal keepContentsMounted={true}>
-          <IonDatetime ref={datetime} presentation="date" id="datetime" value={date} onIonChange={(evt: DatetimeCustomEvent) => {
-            setDate(evt.detail.value as string || "")
+          <IonDatetime ref={datetime} presentation="date" id="datetime" value={dueDate} onIonChange={(evt: DatetimeCustomEvent) => {
+            setDueDate(evt.detail.value as string || "")
             return datetime.current?.confirm(true)
           }}>
             <IonButtons slot="title">
@@ -91,14 +89,11 @@ function EditItem() {
       </IonItem>
 
       <IonButton onClick={async () => {
-          await setObject("todo", id, {
-            id: id,
-            description: description,
-            date: date,
-            category: category,
-            status: "todo"
-          })
-          history.push('/home');
+          if (task) {
+            task.date = dueDate || null
+            taskService.updateTask(task)
+            history.push('/home');
+          }
         }}>Update</IonButton>
         
       </IonContent>

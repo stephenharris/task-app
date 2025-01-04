@@ -22,12 +22,12 @@ import '@ionic/react/css/display.css';
 
 /* Theme variables */
 import './theme/variables.css';
-import { createStore, set } from './data/storage';
+import { IonicStore } from './data/appstorage';
 import EditItem from './pages/EditItem';
+import Settings from './pages/Settings';
 
 setupIonicReact();
-
-createStore("TodoDB");
+IonicStore.getStore("TodoDB");
 //set("todo", []);
 
 const App: React.FC = () => (
@@ -45,6 +45,9 @@ const App: React.FC = () => (
         </Route>
         <Route path="/new">
            <AddItem />
+        </Route>
+        <Route path="/settings">
+           <Settings />
         </Route>
       </IonRouterOutlet>
     </IonReactRouter>

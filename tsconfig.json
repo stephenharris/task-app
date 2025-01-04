@@ -4,7 +4,9 @@
     "lib": [
       "dom",
       "dom.iterable",
-      "esnext"
+      "esnext",
+      "es6", 
+      "es2015",
     ],
     "allowJs": true,
     "skipLibCheck": true,
@@ -13,6 +15,7 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
+    "experimentalSpecifierResolution": true,
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,

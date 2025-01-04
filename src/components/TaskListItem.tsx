@@ -1,5 +1,4 @@
 import {
-  IonBadge,
   IonIcon,
   IonItem,
   IonItemOption,
@@ -9,12 +8,11 @@ import {
   IonNote,
   useIonActionSheet
   } from '@ionic/react';
-import { Task } from '../data/tasks';
+import { Task } from '@stephenharris/task-cli/lib/tasks';
 import './TaskListItem.css';
 import { close, pause, play, checkmark, create, trash} from 'ionicons/icons';
 import moment from 'moment';
-import { useState, useRef } from 'react';
-import type { OverlayEventDetail } from '@ionic/core';
+import { useRef } from 'react';
 import {useHistory} from 'react-router';
 
 moment.relativeTimeThreshold('m', 45);
@@ -34,7 +32,6 @@ interface TaskListItemProps {
 const TaskListItem: React.FC<TaskListItemProps> = ({ task, onStart, onPause, onComplete, onDelete }) => {
 
   const [present] = useIonActionSheet();
-  const [result, setResult] = useState<OverlayEventDetail>();
   const timerRef = useRef();
   const isLongPress = useRef();
   const history = useHistory();
@@ -73,7 +70,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ task, onStart, onPause, onC
        
         if (detail.role === "destructive") {
           onDelete(task);
-        } else if (detail.data && detail.data.action == "edit") {
+        } else if (detail.data && detail.data.action === "edit") {
           history.push(`/edit/${task.id}`);
         }
         
@@ -97,15 +94,15 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ task, onStart, onPause, onC
   return (
     <IonItemSliding onIonDrag={clearLongpressTimeout}>
       <IonItemOptions side="start">
-        <IonItemOption color={task.status == "in-progress" ? "warning" : "primary"} onClick={() => {
+        <IonItemOption color={task.status === "in-progress" ? "warning" : "primary"} onClick={() => {
               console.log("toggle");
-              if (task.status == "in-progress") {
+              if (task.status === "in-progress") {
                 onPause(task)
               } else {
                 onStart(task)
               }
             }}>
-            {task.status != "in-progress" ? 
+            {task.status !== "in-progress" ? 
               <IonIcon slot="icon-only" icon={play}></IonIcon> : 
               <IonIcon slot="icon-only" icon={pause}></IonIcon>
             }
@@ -127,7 +124,6 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ task, onStart, onPause, onC
           <h2>
             {task.description}
           </h2>
-          <IonBadge color="primary">{task.category}</IonBadge>
         </IonLabel>
 
         {task.date && <IonNote slot="end" className="ion-text-wrap">

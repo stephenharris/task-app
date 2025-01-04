@@ -18,10 +18,6 @@
   display: flex;
 }
 
-#view-task-page ion-item ion-icon {
-  font-size: 42px;
-  margin-right: 8px;
-}
 
 #view-task-page ion-item ion-note {
   font-size: 15px;
@@ -38,3 +34,10 @@
 #view-task-page p {
   line-height: 22px;
 }
+
+ion-toast.success-toast {
+  --background: var(--ion-color-success);
+  --box-shadow: 3px 3px 10px 0 rgba(0, 0, 0, 0.2);
+  --color: var(--ion-color-success-contrast);
+}
+
