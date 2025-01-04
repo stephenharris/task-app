@@ -1,0 +1,32 @@
+name: Deploy App to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # Trigger the workflow when pushing to the 'main' branch (or master)
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'  # Set the Node.js version you need for your Ionic project
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build the Ionic app
+      run: npm run build --prod  # Build the app for production
+
+    - name: Deploy to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        branch: gh-pages  # Deploy to the 'gh-pages' branch
+        folder: build 
+        token: ${{ secrets.GITHUB_TOKEN }}  # Automatically generated GitHub token
