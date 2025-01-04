@@ -7,7 +7,6 @@ import {
   IonAlert,
   IonButton,
   IonButtons,
-  IonCheckbox,
   IonContent,
   IonHeader,
   IonItem,
@@ -30,7 +29,7 @@ import './Home.css';
 
 import { IonFab, IonFabButton, IonIcon } from '@ionic/react';
 import { add, settingsOutline } from 'ionicons/icons';
-import { IonicStore, removeObject } from '../data/appstorage';
+import { IonicStore } from '../data/appstorage';
 import moment from 'moment';
 import TaskListItem from '../components/TaskListItem';
 import ChipInput from '../components/ChipInput';

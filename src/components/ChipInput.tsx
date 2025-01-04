@@ -4,8 +4,7 @@ import {
   IonLabel,
   InputCustomEvent,
   IonChip,
-  IonIcon,
-  useIonViewWillEnter
+  IonIcon
 } from '@ionic/react';
 
 import {closeCircle} from 'ionicons/icons';
