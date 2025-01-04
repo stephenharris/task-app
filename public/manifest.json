@@ -1,6 +1,6 @@
 {
-  "short_name": "Todo",
-  "name": "Todo",
+  "short_name": "Task",
+  "name": "Task",
   "icons": [
     {
       "src": "assets/icon/favicon.png",
