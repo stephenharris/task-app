@@ -32,7 +32,7 @@ IonicStore.getStore("TodoDB");
 
 const App: React.FC = () => (
   <IonApp>
-    <IonReactRouter>
+    <IonReactRouter basename="/task-app">
       <IonRouterOutlet>
         <Route path="/" exact={true}>
           <Redirect to="/home" />
