@@ -46,14 +46,7 @@ const Home: React.FC = () => {
   const store = IonicStore.getStore("TodoDB");
   const taskService = new TaskService(store);
 
-
   const location = useLocation();
-  
-    useEffect(() => {
-      console.log(location);
-      fetchItems()
-    }, [location]);
-
 
   const fetchItems = () => {  
     return taskService.getTasks()
@@ -62,6 +55,10 @@ const Home: React.FC = () => {
       })
 
   }
+
+  useEffect(() => {
+    fetchItems()
+  }, [location, fetchItems]);
 
   useIonViewWillEnter(async () => {
     return fetchItems();
