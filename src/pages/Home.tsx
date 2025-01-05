@@ -141,7 +141,7 @@ const Home: React.FC = () => {
       case "today":
         return !!task.date && moment(task.date).isSame(moment(), "day");
       case "tomorrow":
-        return !!task.date && moment(task.date).isSame(moment("tomorrow"), "day");
+        return !!task.date && moment(task.date).isSame( moment().add(1,'days'), "day");
       case "none":
         return !task.date;
       case "overdue":
