@@ -22,6 +22,7 @@ import {useHistory, useLocation} from 'react-router';
 import { IonicStore } from '../data/appstorage';
 import ChipInput from '../components/ChipInput';
 import { TaskService } from '@stephenharris/task-cli/lib/tasks';
+import Footer from '../components/Footer';
 
 function AddItem() {
   const [description, setDescription] = useState<string>("");
@@ -92,6 +93,7 @@ function AddItem() {
           history.push('/home');
         }}>Add</IonButton>
         
+      <Footer/>
       </IonContent>
     </IonPage>
   );

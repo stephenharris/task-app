@@ -23,6 +23,7 @@ import {useHistory} from 'react-router';
 import { IonicStore } from '../data/appstorage';
 import ChipInput from '../components/ChipInput';
 import { Task, TaskService } from '@stephenharris/task-cli/lib/tasks';
+import Footer from '../components/Footer';
 
 
 function EditItem() {
@@ -96,6 +97,8 @@ function EditItem() {
           }
         }}>Update</IonButton>
         
+      <Footer/>
+
       </IonContent>
     </IonPage>
   );

@@ -33,6 +33,7 @@ import { IonicStore } from '../data/appstorage';
 import moment from 'moment';
 import TaskListItem from '../components/TaskListItem';
 import ChipInput from '../components/ChipInput';
+import Footer from '../components/Footer';
 
 const Home: React.FC = () => {
   
@@ -266,6 +267,8 @@ const Home: React.FC = () => {
             <IonIcon icon={add}></IonIcon>
           </IonFabButton>
         </IonFab>
+
+       <Footer/>
 
       </IonContent>
     </IonPage>

@@ -21,6 +21,7 @@ import { IonicStore, set } from '../data/appstorage';
 import { RemoteStore } from '@stephenharris/task-cli/lib/remote';
 import { Gist } from '@stephenharris/task-cli/lib/gist';
 import { sync } from '@stephenharris/task-cli/lib/sync';
+import Footer from '../components/Footer';
 
 function Settings() {
 
@@ -117,8 +118,9 @@ function Settings() {
       <hr></hr>
 
       <IonButton color="danger" onClick={reset}>Reset</IonButton>
-        
 
+      <Footer/>
+      
       </IonContent>
     </IonPage>
   );
