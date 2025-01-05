@@ -72,3 +72,7 @@ ion-footer ion-title {
 .action-sheet-destructive ion-icon{
   color: var(--ion-color-danger)!important;
 }
+
+ion-badge {
+  margin-right: 0.5em;
+}

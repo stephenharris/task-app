@@ -1,4 +1,5 @@
 import {
+  IonBadge,
   IonIcon,
   IonItem,
   IonItemOption,
@@ -124,7 +125,14 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ task, onStart, onPause, onC
           <h2>
             {task.description}
           </h2>
+
+          {task.tags && task.tags.map((tag) => {
+            return (<IonBadge key={task.id + "/" + tag} slot="start">{tag}</IonBadge>)
+          })}
+
+          
         </IonLabel>
+
 
         {task.date && <IonNote slot="end" className="ion-text-wrap">
             Due {moment(task.date).fromNow()}
