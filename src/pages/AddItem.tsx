@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   IonBackButton,
   IonButton,
@@ -18,7 +18,7 @@ import {
 } from '@ionic/react';
 import './ViewTask.css';
 import { v4 as uuid } from 'uuid';
-import {useHistory} from 'react-router';
+import {useHistory, useLocation} from 'react-router';
 import { IonicStore } from '../data/appstorage';
 import ChipInput from '../components/ChipInput';
 import { TaskService } from '@stephenharris/task-cli/lib/tasks';
@@ -32,6 +32,14 @@ function AddItem() {
   const history = useHistory();
 
   const taskService = new TaskService(IonicStore.getStore("TodoDB"))
+
+  const location = useLocation();
+
+  useEffect(() => {
+    setDescription("");
+    setDate("");
+    setTags([]);
+  }, [location]);
 
   return (
     <IonPage id="view-task-page">
@@ -47,7 +55,7 @@ function AddItem() {
       
       <IonItem>
         <IonLabel position="floating">Description</IonLabel>
-        <IonInput onIonChange={(evt: InputCustomEvent) => setDescription(evt.detail.value || "")} placeholder='...'></IonInput>
+        <IonInput value={description} onIonChange={(evt: InputCustomEvent) => setDescription(evt.detail.value || "")} placeholder='...'></IonInput>
       </IonItem>
 
       <IonItem className="item-label-stacked">
@@ -59,10 +67,7 @@ function AddItem() {
         <IonLabel>Date</IonLabel>
         <IonDatetimeButton datetime='datetime-new'></IonDatetimeButton>  
         <IonModal keepContentsMounted={true}>
-          <IonDatetime ref={datetime} presentation="date" id="datetime-new" onIonChange={(evt: DatetimeCustomEvent) => {
-            console.log("arg!");
-            console.log(datetime.current);
-            console.log(evt.detail.value)
+          <IonDatetime value={date}  ref={datetime} presentation="date" id="datetime-new" onIonChange={(evt: DatetimeCustomEvent) => {
             setDate(evt.detail.value as string || "")
             return datetime.current?.confirm(true)
           }}>
