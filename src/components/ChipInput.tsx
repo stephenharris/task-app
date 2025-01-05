@@ -57,7 +57,6 @@ const ChipInput: React.FC<ChipInputProps> = ({ value, onChange }) => {
                 </IonChip>
             )}
             <IonInput 
-                onKeyPress={handleKeyEvent}
                 onKeyDown={handleKeyEvent}
                 onIonChange={(evt: InputCustomEvent) => setCurrentValue(evt?.detail?.value || "")} 
                 placeholder='...' 
