@@ -78,7 +78,7 @@ export class IonicStore implements LocalStore {
     }
 
     public async setTask(id: string, task: Task) {
-      this.setObject("todo", id, task)
+      await this.setObject("todo", id, task)
       return task;
     } 
 

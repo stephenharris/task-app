@@ -36,11 +36,13 @@ function EditItem() {
   const store = IonicStore.getStore("TodoDB");
   const taskService = new TaskService(store)
 
-  const setProperty = (key: keyof Task, value: any) => {
-    if(task){
-      task[key] = value;
-    }
-    return setTask(task);
+  const setProperty = (keyName: keyof Task, value: any) => {
+
+    return setTask({
+      ...task,
+      [keyName]: value
+    });
+
   }
 
   useIonViewWillEnter(() => {
@@ -93,7 +95,8 @@ function EditItem() {
           if (task) {
             task.date = dueDate || null
             taskService.updateTask(task)
-            history.push('/home');
+              .then(() => history.push('/home'))
+            
           }
         }}>Update</IonButton>
         
