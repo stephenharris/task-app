@@ -1,8 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Task, sortTasks, TaskService } from '@stephenharris/task-cli/lib/tasks';
-import { sync } from '@stephenharris/task-cli/lib/sync';
-import { Gist } from '@stephenharris/task-cli/lib/gist';
-import { RemoteStore } from '@stephenharris/task-cli/lib/remote';
 import {
   IonAlert,
   IonButton,
@@ -30,24 +27,35 @@ import './Home.css';
 import { IonFab, IonFabButton, IonIcon } from '@ionic/react';
 import { add, settingsOutline } from 'ionicons/icons';
 import { IonicStore } from '../data/appstorage';
-import moment from 'moment';
 import TaskListItem from '../components/TaskListItem';
 import ChipInput from '../components/ChipInput';
 import Footer from '../components/Footer';
+import { refreshState, taskFilter } from '../helper/task';
+import { useLocation } from 'react-router';
 
 const Home: React.FC = () => {
   
   const [tasks, settasks] = useState<Task[]>([]);
+  
   const [showComplete, setShowComplete]= useState<boolean>(false);
   const [filter, setFilter]= useState<string>("all");
   const [categoryFilter, setCategoryFilter]= useState<string[]>([]);
+  
   const [error, setError] = useState("");
 
   const store = IonicStore.getStore("TodoDB");
   const taskService = new TaskService(store);
 
-  const fetchItems = () => {
-    
+
+  const location = useLocation();
+  
+    useEffect(() => {
+      console.log(location);
+      fetchItems()
+    }, [location]);
+
+
+  const fetchItems = () => {  
     return taskService.getTasks()
       .then((msgs) => {
         settasks(msgs.sort(sortTasks));
@@ -60,52 +68,16 @@ const Home: React.FC = () => {
   });
 
   const refresh = async (e: CustomEvent) => {
-    console.log('refresh');
-    const remote: RemoteStore = await store.get("gist").then((gist) => new Gist(gist.id, gist.token))
-    return Promise.allSettled([
-      taskService.getTasks(),
-      store.getCachedState(),
-      remote.getRemoteState()
-    ])
-      .then(async (result) => {
-
-        if (result[0].status !== "fulfilled") {
-          throw Error("Failed to fetch tasks")
-        }
-
-        if (result[2].status !== "fulfilled") {
-          console.log(result[2].reason)
-          throw Error(`Failed to fetch remote state: ${result[2].reason}`);
-        }
-
-        let tasks = result[0].value;
-        let cachedState = result[1].status === "fulfilled" ? result[1].value : null
-        let remoteState = result[2].value;
-
-        let newState = await sync(remoteState, cachedState, tasks);
-        console.log(remoteState);
-        console.log(newState);
-        console.log(remoteState.serial);
-        console.log(newState.serial);
-        if (newState.serial === remoteState.serial + 1) {
-          await remote.setRemoteState(newState)
-        }
-
-        return store.setCachedState(newState)
-          .then(() => store.set('todo', newState.tasks))
-          .then(fetchItems);      
-      })
+    refreshState(store, taskService)
       .then(() => {
         e.detail.complete()
-        console.log("complete");
       })
+      .then(fetchItems)
       .catch((error) => {
         setError(error.message);
         e.detail.complete();
-        
       });
-
-  };
+  }
 
   const startTask = async (task: Task) => {
     task.status = "in-progress"
@@ -128,32 +100,7 @@ const Home: React.FC = () => {
       .then(fetchItems)
   }
 
-  const showTask = (task: Task) : boolean => {
-
-    if (!showComplete && task.status === "complete") {
-      return false;
-    }
-
-    if( categoryFilter && categoryFilter.length > 0 && !categoryFilter.every(search => task.tags.includes(search))) {
-      return false;
-    } 
-
-    switch (filter) {
-      case "today":
-        return !!task.date && moment(task.date).isSame(moment(), "day");
-      case "tomorrow":
-        return !!task.date && moment(task.date).isSame( moment().add(1,'days'), "day");
-      case "none":
-        return !task.date;
-      case "overdue":
-        return !!task.date && moment(task.date).isBefore(moment(), "day") && task.status !== "complete";
-      default:
-        return true;
-    }
-
-  }
-
-  let visibleTasks = tasks && tasks.filter(showTask).sort(sortTasks);
+  let visibleTasks = tasks && tasks.filter(taskFilter(showComplete, categoryFilter, filter)).sort(sortTasks);
 
   return (
     <>
