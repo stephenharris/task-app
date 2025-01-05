@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Task, sortTasks, TaskService } from '@stephenharris/task-cli/lib/tasks';
 import {
   IonAlert,
@@ -31,7 +31,6 @@ import TaskListItem from '../components/TaskListItem';
 import ChipInput from '../components/ChipInput';
 import Footer from '../components/Footer';
 import { refreshState, taskFilter } from '../helper/task';
-import { useLocation } from 'react-router';
 
 const Home: React.FC = () => {
   
@@ -46,8 +45,6 @@ const Home: React.FC = () => {
   const store = IonicStore.getStore("TodoDB");
   const taskService = new TaskService(store);
 
-  const location = useLocation();
-
   const fetchItems = () => {  
     return taskService.getTasks()
       .then((msgs) => {
@@ -55,10 +52,6 @@ const Home: React.FC = () => {
       })
 
   }
-
-  useEffect(() => {
-    fetchItems()
-  }, [location, fetchItems]);
 
   useIonViewWillEnter(async () => {
     return fetchItems();
