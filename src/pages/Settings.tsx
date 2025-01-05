@@ -13,7 +13,9 @@ import {
   InputCustomEvent,
   useIonViewWillEnter,
   IonAlert,
-  useIonToast
+  useIonToast,
+  IonCheckbox,
+  CheckboxCustomEvent
 } from '@ionic/react';
 import './ViewTask.css';
 import {useHistory} from 'react-router';
@@ -109,15 +111,23 @@ function Settings() {
         <IonInput onIonChange={(evt: InputCustomEvent) => setToken(evt.detail.value || "")} value={token} placeholder='...'></IonInput>
       </IonItem>
 
-      <IonButton onClick={async () => {
+      <hr></hr>
+      
+      <IonItem>
+        <IonCheckbox slot="start" onIonChange={(evt: CheckboxCustomEvent) => document.body.classList.toggle('dark', evt.detail.checked)} ></IonCheckbox>
+        <IonLabel>Toggle dark mode</IonLabel>
+      </IonItem>
+
+      <hr></hr>
+
+      <IonToolbar>
+        <IonButton slot="start" onClick={async () => {
           await store.set("gist", {id: id, token: token})
           history.push('/home');
         }}>Update</IonButton>
         
-
-      <hr></hr>
-
-      <IonButton color="danger" onClick={reset}>Reset</IonButton>
+        <IonButton slot="end" color="danger" onClick={reset}>Reset</IonButton>
+      </IonToolbar>
 
       <Footer/>
       
