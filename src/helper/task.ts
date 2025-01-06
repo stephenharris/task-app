@@ -3,6 +3,7 @@ import { Task, TaskService } from "@stephenharris/task-cli/lib/tasks";
 import moment from "moment";
 import { IonicStore } from "../data/appstorage";
 import { Gist } from "@stephenharris/task-cli/lib/gist";
+import { sync } from "@stephenharris/task-cli/lib/sync";
   
 export const taskFilter = (showComplete: boolean, categoryFilter: Array<string>, dateFilter: string) => {
     return (task: Task) : boolean => {
