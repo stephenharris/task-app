@@ -86,3 +86,24 @@ self.addEventListener('push', (event) => {
     icon: 'assets/icon/icon.png',
   });
 });
+
+self.addEventListener('notificationclick', function (event) {
+  console.log('On notification click: ', event);
+
+  event.notification.close(); // Close the notification
+
+  // This returns a promise that resolves when the window is focused or opened
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (clientList) {
+      for (const client of clientList) {
+        if (client.url === '/' && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // If no client/tab is open, open a new one
+      if (clients.openWindow) {
+        return clients.openWindow('/');
+      }
+    })
+  );
+});
