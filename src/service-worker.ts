@@ -84,6 +84,7 @@ self.addEventListener('push', (event) => {
   self.registration.showNotification(data.title, {
     body: data.body,
     icon: 'assets/icon/icon.png',
+    requireInteraction: true
   });
 });
 
