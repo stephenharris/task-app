@@ -12,6 +12,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     
+    env:
+      REACT_APP_API_URL: 'https://gmn5rclijp5gszbm2yro3g4aja0exiqo.lambda-url.eu-west-2.on.aws'
+      REACT_APP_VAPID_PUBLIC_KEY: 'BDZ8dBzZYqLm4XCJtQfvLVbdsLsqnRMsU_8X8OYBBHlPKVTCL-lbnybsxzyO7HgSsYOCTUFgj8chII9Nffqj1Wo'
+
     steps:
     - name: Checkout the repository
       uses: actions/checkout@v3
